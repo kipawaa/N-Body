@@ -83,15 +83,54 @@ def calcVelocities(arr):
 	return arr
 
 # takes an array of planets and updates their positions based on their velocities. returns the updated array
-def movePlanets(arr):
+def movePlanets(arr, keepOnScreen=False):
 	for i in arr:
 		i.moveX()
 		i.moveY()
+		if keepOnScreen:
+			if i.x < 0:
+				i.x = 0
+				i.xvel = 0
+			if i.y < 0:
+				i.y = 0
+				i.yvel = 0
+			if i.x > winWidth:
+				i.x = winWidth
+				i.xvel = 0
+			if i.y > winHeight:
+				i.y = winHeight
+				i.yvel = 0
 	return arr
 
 
 # takes an array of planets and checks for collisions. collided planets will be merged. returns updated array
 #TODO
+def collisionDetection(arr):
+	for i in arr:
+		collided = []
+		for j in arr:
+			dist = ( (i.x - j.x)**2 + (i.y - j.y)**2) **(1/2)
+			if dist < i.radius + j.radius:
+				collided.append(j)
+		if len(collided) > 0:
+			x = 0
+			y = 0
+			xvel = 0
+			yvel = 0
+			mass = 0
+			# determine mass first in order to scale velocities properly later
+			for i in collided:
+				mass += i.mass
+
+			for i in collided:
+				x += i.x / len(collided)
+				y += i.y / len(collided)
+				xvel += i.xvel * i.mass / mass
+				yvel += i.yvel * i.mass / mass
+				arr.remove(i)
+
+			arr.append(Planet(x, y, xvel, yvel, mass))
+	return arr
 
 # takes an array of planets and draws them to the given canvas
 def drawPlanets(arr, canvas):
@@ -114,7 +153,8 @@ def runSim(numFrames):
 		t += 1
 		canvas.delete("all")
 		planets = calcVelocities(planets)
-		planets = movePlanets(planets)
+		planets = movePlanets(planets, True)
+		planets = collisionDetection(planets)
 		
 		drawPlanets(planets, canvas)
 

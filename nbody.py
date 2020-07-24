@@ -3,7 +3,7 @@ from time import time
 from math import pi
 from Graphics_Functions import *
 
-#class to create and manage planets
+# class to create and manage planets
 class Planet:
     def __init__(self, x, y, xvel, yvel, mass):
         self.x = x
@@ -25,7 +25,7 @@ class Planet:
     def moveY(self, y):
         self.y += y
 
-#places a given number of planets
+# places a given number of planets
 def startScene(low, high):
     numPlanets = randint(low, high)
     planets = []
@@ -36,7 +36,7 @@ def startScene(low, high):
         planets.append(Planet(x, y, 0, 0, mass))
     return planets
 
-#changes the velocities of the planets
+# changes the velocities of the planets
 def calcVelocities(arr):
     print('Calculating Velocities...')
     G = 6.67408*10**(-11)
@@ -58,7 +58,7 @@ def calcVelocities(arr):
     print('Velocities Calculated.')
     return arr
 
-#is used to move planets and detet collisions
+# is used to move planets and detect collisions
 def movePlanets(arr):
     print('Moving Planets...')
 
@@ -85,7 +85,7 @@ def movePlanets(arr):
     print('Planets Moved.')
     return arr
 
-#creates visual representation of an array of planets
+# creates visual representation of an array of planets
 def visualize(arr, win):
     print('visualizing the scene...')
     clearWin(win)
@@ -94,7 +94,7 @@ def visualize(arr, win):
         circ.draw(win)
     print('visualized.')
 
-#runs a simulation of Conway's Game of Life with Zelle Graphics
+# runs the simulation with Zelle Graphics
 def graphicsRun():
     #creates a window
     win = prepWin('NBody Simulation', 1280, 710)

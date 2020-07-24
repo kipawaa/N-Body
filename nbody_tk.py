@@ -3,11 +3,12 @@ from math import atan, sin, cos, pi
 import tkinter as tk
 
 #GLOBAL VARIABLES
-winWidth = 1000
+winWidth = 1650
 winHeight = 1000
 maxMass = 1000
 minMass = 100
-G = 6.67408 * 10**(-3)
+# gravity should be *10**(-11) but this results in EXTREMELY slow simulations, so it has been strengthened for practical purposes
+G = 6.67408 * 10**(-4)
 
 
 # planet class

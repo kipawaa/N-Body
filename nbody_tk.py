@@ -1,12 +1,17 @@
 from random import random, randint
-from math import atan, sin, cos, pi
+from math import pi
 import tkinter as tk
+
+
+#TODO
+'''
+trailing lines
+specific simulations (solar system, balanced dual planet, etc.)
+'''
 
 #GLOBAL VARIABLES
 winWidth = 1650
 winHeight = 1000
-
-
 
 # planet class
 class Planet:
@@ -63,7 +68,7 @@ def startPlanets(num, initialVelocity=1, maxVelocity=10, minMass=100, maxMass=10
 	return planets
 
 # takes an array of planets and updates their velocities based on their proximity and masses. returns the updated array
-# gravity should be 10**(-11) but this results in EXTREMELY slow simulations, so it has been strengthened for practical purposes
+# gravity should be 10**(-11) but this results in EXTREMELY slow moving simulations, so it has been strengthened for practical purposes
 def calcVelocities(planets):
 	# loops through each planet and each other planet to calculate forces and from that, velocities
 	for target_planet in planets:
@@ -104,7 +109,7 @@ def movePlanets(planets, keepOnScreen=False):
 			if planet.x + planet.radius > winWidth:
 				planet.x = winWidth - planet.radius
 				planet.xvel = 0
-			if planet.y +planet.radius > winHeight:
+			if planet.y + planet.radius > winHeight:
 				planet.y = winHeight - planet.radius
 				planet.yvel = 0
 	return planets
@@ -185,6 +190,34 @@ def runSim(numFrames, numPlanets):
 		# update the canvas
 		canvas.update()
 	mainloop()
+	root.destroy()
+
+def dualOrbitSim(numFrames):
+	root = tk.Tk()
+	root.wm_title = ("Identical planets")
+	canvas = tk.Canvas(root, width = winWidth, height = winHeight, bg = 'black')
+	canvas.grid(row = 0, column = 0)
+
+	t = 0
+
+	planets = [Planet(winWidth/2 - winWidth/20, winHeight/2 - winHeight/20, 0, 2, 10000), Planet(winWidth/2 + winWidth/20, winHeight/2 + winHeight/20, 0, -2, 10000)]
+
+	while t < numFrames:
+		t += 1
+
+		canvas.delete("all")
+
+		planets = calcVelocities(planets)
+		planets = movePlanets(planets, True)
+		planets = collisionDetection(planets)
+
+		drawPlanets(planets, canvas)
+
+		canvas.update()
+	mainloop()
+	root.destroy
 
 if __name__ == '__main__':
-	runSim(50000, 125)
+	# calls the function to run the simulation with a set time limit and number of planets
+	runSim(50000, 250)
+	#dualOrbitSim(50000)

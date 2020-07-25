@@ -5,20 +5,19 @@ import tkinter as tk
 #GLOBAL VARIABLES
 winWidth = 1650
 winHeight = 1000
-maxMass = 1000
-minMass = 100
-# gravity should be *10**(-11) but this results in EXTREMELY slow simulations, so it has been strengthened for practical purposes
-G = 6.67408 * 10**(-4)
+
 
 
 # planet class
 class Planet:
+	# constructor for the class
 	def __init__(self, x, y, xvel, yvel, mass):
 		self.x = x
 		self.y = y
 		self.xvel = xvel
 		self.yvel = yvel
 		self.mass = mass
+		# sets the radius to scale according to the mass (kept small by the exponent for screen size limitations and visual purposes)
 		self.radius = (self.mass / pi) ** (1/3)
 	
 	# used to adjust the x velocity of the planet
@@ -42,7 +41,7 @@ class Planet:
 		canvas.create_oval(self.x - self.radius, self.y - self.radius, self.x + self.radius, self.y + self.radius, fill = "white")
 
 # returns an list of 'num' planets with random x and y coordinates, and mass from minMass to maxMass
-def startPlanets(num):
+def startPlanets(num, initialVelocity=1, maxVelocity=10, minMass=100, maxMass=1000):
 	# list to store the planets
 	planets = []
 
@@ -51,67 +50,78 @@ def startPlanets(num):
 		x = randint(0, winWidth)
 		y = randint(0, winHeight)
 
+		# this applies a little bit of "branchless programming" but achieves the same as saying "if initialVelocity then randomize intial velocities, otherwise set to 0"
+		xvel = 0 + initialVelocity * randint(-maxVelocity, maxVelocity)
+		yvel = 0 + initialVelocity * randint(-maxVelocity, maxVelocity)
+
 		# generates a random mass within the global variable limits
 		mass = randint(minMass, maxMass)
 
 		# adds the created planet to the list
-		planets.append(Planet(x, y, 0, 0, mass))
+		planets.append(Planet(x, y, xvel, yvel, mass))
 	
 	return planets
 
 # takes an array of planets and updates their velocities based on their proximity and masses. returns the updated array
-def calcVelocities(arr):
+# gravity should be 10**(-11) but this results in EXTREMELY slow simulations, so it has been strengthened for practical purposes
+def calcVelocities(planets):
 	# loops through each planet and each other planet to calculate forces and from that, velocities
-	for i in arr:
-		for j in arr:
+	for target_planet in planets:
+		for secondary_planet in planets:
 			# determines the distance between the planets
-			xdist = i.x - j.x
-			ydist = i.y - j.y
+			xdist = target_planet.x - secondary_planet.x
+			ydist = target_planet.y - secondary_planet.y
 			dist = ( (xdist**2) + (ydist**2) ) ** (1/2)
 			
 			# force is 0 if distance is 0, so no calculations are necessary
 			if dist != 0:
 				# determines the force applied on planet i by planet j
-				force = G * i.mass * j.mass / (dist**2)
+				force = 6.67408 * 10**(-4) * target_planet.mass * secondary_planet.mass / (dist**2)
 
 				# determines the acceleration from the force
-				accel = force / i.mass
+				accel = force / target_planet.mass
 				
 				# applies the found acceleration to each velocity component
-				i.addXVel(-accel * (i.x - j.x))
-				i.addYVel(-accel * (i.y - j.y))
-	return arr
+				target_planet.addXVel(-accel * (target_planet.x - secondary_planet.x))
+				target_planet.addYVel(-accel * (target_planet.y - secondary_planet.y))
+	return planets
 
 # takes an array of planets and updates their positions based on their velocities. returns the updated array
-def movePlanets(arr, keepOnScreen=False):
-	for i in arr:
-		i.moveX()
-		i.moveY()
+def movePlanets(planets, keepOnScreen=False):
+	for planet in planets:
+		# adjusts the x and y coordinates of each planet
+		planet.moveX()
+		planet.moveY()
+
+		# ensures that planets are stopped if they reach or pass the edge of the screen
 		if keepOnScreen:
-			if i.x < 0:
-				i.x = 0
-				i.xvel = 0
-			if i.y < 0:
-				i.y = 0
-				i.yvel = 0
-			if i.x > winWidth:
-				i.x = winWidth
-				i.xvel = 0
-			if i.y > winHeight:
-				i.y = winHeight
-				i.yvel = 0
-	return arr
+			if planet.x - planet.radius < 0:
+				planet.x = 0 + planet.radius
+				planet.xvel = 0
+			if planet.y - planet.radius < 0:
+				planet.y = 0 + planet.radius
+				planet.yvel = 0
+			if planet.x + planet.radius > winWidth:
+				planet.x = winWidth - planet.radius
+				planet.xvel = 0
+			if planet.y +planet.radius > winHeight:
+				planet.y = winHeight - planet.radius
+				planet.yvel = 0
+	return planets
 
 
 # takes an array of planets and checks for collisions. collided planets will be merged. returns updated array
-#TODO
-def collisionDetection(arr):
-	for i in arr:
+def collisionDetection(planets):
+	for target_planet in planets:
+		# stores which planets the target planet has collided with
 		collided = []
-		for j in arr:
-			dist = ( (i.x - j.x)**2 + (i.y - j.y)**2) **(1/2)
-			if dist < i.radius + j.radius:
-				collided.append(j)
+		for secondary_planet in planets:
+			# determines which planets have collided with the target
+			dist = ( (target_planet.x - secondary_planet.x)**2 + (target_planet.y - secondary_planet.y)**2) **(1/2)
+			if dist < target_planet.radius + secondary_planet.radius:
+				collided.append(secondary_planet)
+
+		# if collisions have occurred, combines the planets and removes them from the original array
 		if len(collided) > 0:
 			x = 0
 			y = 0
@@ -119,47 +129,62 @@ def collisionDetection(arr):
 			yvel = 0
 			mass = 0
 			# determine mass first in order to scale velocities properly later
-			for i in collided:
-				mass += i.mass
+			for planet in collided:
+				mass += planet.mass
+			
+			# determines the rest of the parameters
+			for planet in collided:
+				# x, y, xvel and yvel are scaled according to mass for more "realistic" collisions
+				x += planet.x * planet.mass / mass
+				y += planet.y * planet.mass / mass
+				xvel += planet.xvel * planet.mass / mass
+				yvel += planet.yvel * planet.mass / mass
 
-			for i in collided:
-				x += i.x / len(collided)
-				y += i.y / len(collided)
-				xvel += i.xvel * i.mass / mass
-				yvel += i.yvel * i.mass / mass
-				arr.remove(i)
-
-			arr.append(Planet(x, y, xvel, yvel, mass))
-	return arr
+				# removes the planets once they're no longer needed for calculations
+				planets.remove(planet)
+			
+			# adds the new planet to the active planets list
+			planets.append(Planet(x, y, xvel, yvel, mass))
+	return planets
 
 # takes an array of planets and draws them to the given canvas
-def drawPlanets(arr, canvas):
-	for i in arr:
-		i.draw(canvas)
+def drawPlanets(planets, canvas):
+	for planet in planets:
+		planet.draw(canvas)
 
-# runs the simulation for 'numFrames' frames
-def runSim(numFrames):
+# runs the simulation for 'numFrames' frames (limited as a safety feature, prevents program from running infinitely if numPlanets is naively set very high (recommended <250))
+def runSim(numFrames, numPlanets):
 	# sets up tk window etc
 	root = tk.Tk()
 	root.wm_title = ("N-body Simulation")
 	canvas = tk.Canvas(root, width = winWidth, height = winHeight, bg = 'black')
 	canvas.grid(row = 0, column = 0)
+
 	# intializes "time" to 0
 	t = 0
 
-	planets = startPlanets(25)
+	# creates all the initial planets
+	planets = startPlanets(numPlanets, True)
 
+	# runs the simulation for a given number of frames
 	while t < numFrames:
+		# increment the frame/time counter
 		t += 1
+
+		# remove all old objects from the canvas
 		canvas.delete("all")
+
+		# update the planets
 		planets = calcVelocities(planets)
 		planets = movePlanets(planets, True)
 		planets = collisionDetection(planets)
 		
+		# draw the planets
 		drawPlanets(planets, canvas)
-
+		
+		# update the canvas
 		canvas.update()
 	mainloop()
 
 if __name__ == '__main__':
-	runSim(10000)
+	runSim(50000, 125)

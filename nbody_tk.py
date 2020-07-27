@@ -1,7 +1,7 @@
 from random import random, randint
 from math import pi
 import tkinter as tk
-
+import multiprocessing as mp
 
 #TODO
 '''
@@ -41,6 +41,30 @@ class Planet:
 	def moveY(self):
 		self.y += self.yvel
 	
+	# determines the change in velocity for this planet due to the force applied by 'planet'
+	def calcVelocity(self, secondary_planet):
+		# determines the distance between the planets
+		xdist = self.x - secondary_planet.x
+		ydist = self.y - secondary_planet.y
+		dist = ( (xdist**2) + (ydist**2) ) ** (1/2)
+		
+		# force is 0 if distance is 0, so no calculations are necessary
+		if dist != 0:
+			# determines the force applied on self by planet secondary
+			force = 6.67408 * 10**(-4) * self.mass * secondary_planet.mass / (dist**2)
+
+			# determines the acceleration from the force
+			accel = force / self.mass
+			
+			# applies the found acceleration to each velocity component
+			self.addXVel(-accel * (self.x - secondary_planet.x))
+			self.addYVel(-accel * (self.y - secondary_planet.y))
+	
+	# uses calcVelocity to change self's velocity according to gravtitational forces from planets
+	def overallVelocity(self, planets):
+		for planet in planets:
+			self.calcVelocity(planet)
+
 	# used to draw the planet on the given canvas
 	def draw(self, canvas):
 		canvas.create_oval(self.x - self.radius, self.y - self.radius, self.x + self.radius, self.y + self.radius, fill = "white")
@@ -71,25 +95,8 @@ def startPlanets(num, initialVelocity=1, maxVelocity=10, minMass=100, maxMass=10
 # gravity should be 10**(-11) but this results in EXTREMELY slow moving simulations, so it has been strengthened for practical purpose
 def calcVelocities(planets):
 	# loops through each planet and each other planet to calculate forces and from that, velocities
-	for target_planet in planets:
-		for secondary_planet in planets:
-			# determines the distance between the planets
-			xdist = target_planet.x - secondary_planet.x
-			ydist = target_planet.y - secondary_planet.y
-			dist = ( (xdist**2) + (ydist**2) ) ** (1/2)
-			
-			# force is 0 if distance is 0, so no calculations are necessary
-			if dist != 0:
-				# determines the force applied on planet i by planet j
-				force = 6.67408 * 10**(-4) * target_planet.mass * secondary_planet.mass / (dist**2)
-
-				# determines the acceleration from the force
-				accel = force / target_planet.mass
-				
-				# applies the found acceleration to each velocity component
-				target_planet.addXVel(-accel * (target_planet.x - secondary_planet.x))
-				target_planet.addYVel(-accel * (target_planet.y - secondary_planet.y))
-	return planets
+	for planet in planets:
+		planet.overallVelocity(planets)
 
 # takes an array of planets and updates their positions based on their velocities. returns the updated array
 def movePlanets(planets, keepOnScreen=False):
@@ -112,8 +119,6 @@ def movePlanets(planets, keepOnScreen=False):
 			if planet.y + planet.radius > winHeight:
 				planet.y = winHeight - planet.radius
 				planet.yvel = 0
-	return planets
-
 
 # takes an array of planets and checks for collisions. collided planets will be merged. returns updated array
 def collisionDetection(planets):
@@ -150,7 +155,6 @@ def collisionDetection(planets):
 			
 			# adds the new planet to the active planets list
 			planets.append(Planet(x, y, xvel, yvel, mass))
-	return planets
 
 # takes an array of planets and draws them to the given canvas
 def drawPlanets(planets, canvas):
@@ -180,9 +184,9 @@ def runSim(numFrames, numPlanets):
 		canvas.delete("all")
 
 		# update the planets
-		planets = calcVelocities(planets)
-		planets = movePlanets(planets, True)
-		planets = collisionDetection(planets)
+		calcVelocities(planets)
+		movePlanets(planets, True)
+		collisionDetection(planets)
 		
 		# draw the planets
 		drawPlanets(planets, canvas)
@@ -191,31 +195,6 @@ def runSim(numFrames, numPlanets):
 		canvas.update()
 	mainloop()
 	root.destroy()
-
-def dualOrbitSim(numFrames):
-	root = tk.Tk()
-	root.wm_title = ("Identical planets")
-	canvas = tk.Canvas(root, width = winWidth, height = winHeight, bg = 'black')
-	canvas.grid(row = 0, column = 0)
-
-	t = 0
-
-	planets = [Planet(winWidth/2 - winWidth/20, winHeight/2 - winHeight/20, 0, 2, 10000), Planet(winWidth/2 + winWidth/20, winHeight/2 + winHeight/20, 0, -2, 10000)]
-
-	while t < numFrames:
-		t += 1
-
-		canvas.delete("all")
-
-		planets = calcVelocities(planets)
-		planets = movePlanets(planets, True)
-		planets = collisionDetection(planets)
-
-		drawPlanets(planets, canvas)
-
-		canvas.update()
-	mainloop()
-	root.destroy
 
 if __name__ == '__main__':
 	# calls the function to run the simulation with a set time limit and number of planets

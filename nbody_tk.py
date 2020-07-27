@@ -68,7 +68,7 @@ def startPlanets(num, initialVelocity=1, maxVelocity=10, minMass=100, maxMass=10
 	return planets
 
 # takes an array of planets and updates their velocities based on their proximity and masses. returns the updated array
-# gravity should be 10**(-11) but this results in EXTREMELY slow moving simulations, so it has been strengthened for practical purposes
+# gravity should be 10**(-11) but this results in EXTREMELY slow moving simulations, so it has been strengthened for practical purpose
 def calcVelocities(planets):
 	# loops through each planet and each other planet to calculate forces and from that, velocities
 	for target_planet in planets:

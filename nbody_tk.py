@@ -192,7 +192,37 @@ def runSim(numFrames, numPlanets):
 	mainloop()
 	root.destroy()
 
+def twoPlanet(numFrames):
+	root = tk.Tk()
+	root.wm_title = ("Two Planet")
+	canvas = tk.Canvas(root, width = winWidth, height = winHeight, bg = 'black')
+	canvas.grid(row = 0, column = 0)
+
+	t = 0
+
+	planet1 = Planet(winWidth/2 - 100, winHeight/2 - 100, 0, -1.5, 10000);
+	planet2 = Planet(winWidth/2 + 100, winHeight/2 + 100, 0, 1.5, 10000);
+	planets = [planet1, planet2]
+
+	while t < numFrames:
+		t += 1
+
+		canvas.delete("all")
+
+		calcVelocities(planets)
+		movePlanets(planets)
+		collisionDetection(planets)
+
+		drawPlanets(planets, canvas)
+
+		canvas.update()
+	mainloop()
+	root.destroy()
+
 if __name__ == '__main__':
 	# calls the function to run the simulation with a set time limit and number of planets
-	runSim(50000, 250)
-	#dualOrbitSim(50000)
+	user = int(input("Menu:\ninput 1 to run a regular, randomized simulation\ninput 2 to see a two planet simulation\nenter your choice:"))
+	if (user == 1):
+		runSim(50000, 250)
+	if (user == 2):
+		twoPlanet(50000)

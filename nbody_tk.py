@@ -33,12 +33,9 @@ class Planet:
 	def addYVel(self, yaccel):
 		self.yvel += yaccel
 	
-	# used to adjust the x position of the planet according to its velocity
-	def moveX(self):
+	# used to adjust the position of the planet according to its velocity
+	def move(self):
 		self.x += self.xvel
-	
-	# used to adjust the y position of the planet according to its velocity
-	def moveY(self):
 		self.y += self.yvel
 	
 	# determines the change in velocity for this planet due to the force applied by 'planet'
@@ -99,11 +96,10 @@ def calcVelocities(planets):
 		planet.overallVelocity(planets)
 
 # takes an array of planets and updates their positions based on their velocities. returns the updated array
-def movePlanets(planets, keepOnScreen=False):
+def movePlanets(planets, keepOnScreen=True):
 	for planet in planets:
 		# adjusts the x and y coordinates of each planet
-		planet.moveX()
-		planet.moveY()
+		planet.move()
 
 		# ensures that planets are stopped if they reach or pass the edge of the screen
 		if keepOnScreen:
@@ -183,9 +179,9 @@ def runSim(numFrames, numPlanets):
 		# remove all old objects from the canvas
 		canvas.delete("all")
 
-		# update the planets
+		# update the planets information (velocity, then position, then check for collisions)
 		calcVelocities(planets)
-		movePlanets(planets, True)
+		movePlanets(planets)
 		collisionDetection(planets)
 		
 		# draw the planets

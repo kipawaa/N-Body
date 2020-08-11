@@ -158,7 +158,7 @@ def drawPlanets(planets, canvas):
 		planet.draw(canvas)
 
 # runs the simulation for 'numFrames' frames (limited as a safety feature, prevents program from running infinitely if numPlanets is naively set very high (recommended <250))
-def runSim(numFrames, numPlanets):
+def runSim(numFrames, numPlanets, collisions=True):
 	# sets up tk window etc
 	root = tk.Tk()
 	root.wm_title = ("N-body Simulation")
@@ -182,7 +182,8 @@ def runSim(numFrames, numPlanets):
 		# update the planets information (velocity, then position, then check for collisions)
 		calcVelocities(planets)
 		movePlanets(planets)
-		collisionDetection(planets)
+		if (collisions == True):
+			collisionDetection(planets)
 		
 		# draw the planets
 		drawPlanets(planets, canvas)
@@ -223,6 +224,11 @@ if __name__ == '__main__':
 	# calls the function to run the simulation with a set time limit and number of planets
 	user = int(input("Menu:\ninput 1 to run a regular, randomized simulation\ninput 2 to see a two planet simulation\nenter your choice:"))
 	if (user == 1):
-		runSim(50000, 250)
+		collisions = input("input 'y' to enable collision detection, 'n' to disable")
+		if (collisions == 'y'):
+			collisions = True
+		else:
+			collisions = False
+		runSim(50000, 200, collisions)
 	if (user == 2):
 		twoPlanet(50000)

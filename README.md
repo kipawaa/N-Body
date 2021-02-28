@@ -1,2 +1,4 @@
 # N-Body
- N-body simulations in various languages (also in various degrees of completion o_o)
+N-body simulation in python
+
+https://user-images.githubusercontent.com/46198128/109434276-83753b00-79e2-11eb-840d-5419124b6820.mov

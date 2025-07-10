@@ -44,12 +44,12 @@ class Planet:
         self.y += self.yvel
 
         if winwidth:
-            self.x = max(0, self.x)
-            self.x = min(self.x, winWidth)
+            self.x = max(self.radius, self.x)
+            self.x = min(self.x, winWidth - self.radius)
 
         if winHeight:
-            self.y = max(0, self.y)
-            self.y = min(self.y, winHeight)
+            self.y = max(self.radius, self.y)
+            self.y = min(self.y, winHeight - self.radius)
 
     def calcVelocity(self, secondary_planet: Self):
         """

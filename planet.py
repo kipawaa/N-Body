@@ -34,7 +34,7 @@ class Planet:
 
         self.yvel += yaccel
 
-    def move(self, winWidth, winHeight):
+    def move(self, winWidth: int=None, winHeight: int=None):
         """
         updates the planet's x and y positions according to its current
         velocities
@@ -43,11 +43,15 @@ class Planet:
         self.x += self.xvel
         self.y += self.yvel
 
-        if winwidth:
+        if winWidth:
+            if not self.radius <= self.x <= winWidth - self.radius:
+                self.xvel = 0
             self.x = max(self.radius, self.x)
             self.x = min(self.x, winWidth - self.radius)
 
         if winHeight:
+            if not self.radius <= self.yvel <= winHeight - self.radius:
+                self.yvel = 0
             self.y = max(self.radius, self.y)
             self.y = min(self.y, winHeight - self.radius)
 

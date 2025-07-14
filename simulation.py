@@ -143,17 +143,11 @@ def runSim(numPlanets, collisions=True):
     canvas = tk.Canvas(root, width=WINWIDTH, height=WINHEIGHT, bg = 'black')
     canvas.grid(row=0, column = 0)
 
-    # intializes "time" to 0
-    t = 0
-
     # creates all the initial planets
     planets = startPlanets(numPlanets)
 
     # runs the simulation for a given number of frames
     while True:
-        # increment the frame/time counter
-        t += 1
-
         # remove all old objects from the canvas
         canvas.delete("all")
 

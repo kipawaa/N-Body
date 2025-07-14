@@ -29,8 +29,8 @@ def startPlanets(
         y = randint(0, WINHEIGHT)
 
         # generate velocities conditioned on intialVelocity
-        xvel = 0 #+ initialVelocity * random() * 2 * maxVelocity - maxVelocity
-        yvel = 0 #+ initialVelocity * random() * 2 * maxVelocity - maxVelocity
+        xvel = 0 + initialVelocity * random() * 2 * maxVelocity - maxVelocity
+        yvel = 0 + initialVelocity * random() * 2 * maxVelocity - maxVelocity
 
         # generates a random mass within the global variable limits
         mass = randint(minMass, maxMass)

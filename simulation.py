@@ -9,15 +9,14 @@ from constants import *
 
 def startPlanets(
         numPlanets: int,
-        initialVelocity: float=1,
-        maxVelocity: float=10,
-        minMass: float=100,
-        maxMass: float=1000) -> list[Planet]:
+        maxVelocity: float=MAX_INITIAL_VELOCITY,
+        minMass: float=MIN_MASS,
+        maxMass: float=MAX_MASS) -> list[Planet]:
     
     """
     returns a list of numPlanets Planets with the following properties:
     - random x and y coordinates
-    - initial velocities in a random direction with magnitude intialVelocity
+    - initial velocities in a random direction with magnitude up to maxVelocity
     - mass from minMass to maxMass
     """
 
@@ -29,8 +28,8 @@ def startPlanets(
         y = randint(0, WINHEIGHT)
 
         # generate velocities conditioned on intialVelocity
-        xvel = 0 + initialVelocity * random() * 2 * maxVelocity - maxVelocity
-        yvel = 0 + initialVelocity * random() * 2 * maxVelocity - maxVelocity
+        xvel = random() * 2 * maxVelocity - maxVelocity
+        yvel = random() * 2 * maxVelocity - maxVelocity
 
         # generates a random mass within the global variable limits
         mass = randint(minMass, maxMass)

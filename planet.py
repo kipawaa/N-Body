@@ -24,7 +24,7 @@ class Planet:
         """
         adds xaccel to the planet's x velocity
         """
-
+        
         self.xvel += xaccel
 
     def addYVel(self, yaccel: float) -> None:
@@ -39,18 +39,18 @@ class Planet:
         updates the planet's x and y positions according to its current
         velocities
         """
-
+        
         self.x += self.xvel
         self.y += self.yvel
 
         if winWidth:
-            if not self.radius <= self.x <= winWidth - self.radius:
+            if not (self.radius <= self.x <= winWidth - self.radius):
                 self.xvel = 0
             self.x = max(self.radius, self.x)
             self.x = min(self.x, winWidth - self.radius)
 
         if winHeight:
-            if not self.radius <= self.yvel <= winHeight - self.radius:
+            if not (self.radius <= self.y <= winHeight - self.radius):
                 self.yvel = 0
             self.y = max(self.radius, self.y)
             self.y = min(self.y, winHeight - self.radius)
@@ -64,13 +64,13 @@ class Planet:
         # determines the distance between the planets
         xdist = self.x - secondary_planet.x
         ydist = self.y - secondary_planet.y
-        dist = ((xdist**2) + (ydist**2)) ** (1 / 2)
+        dist = ((xdist ** 2) + (ydist ** 2)) ** (1 / 2)
 
         # force is 0 if distance is 0, so no calculations are necessary
-        if dist != 0:
+        if dist > 0:
             # determines the force applied on self by secondary_planet
-            force = 6.67408 * 10**(-4) * self.mass * \
-                secondary_planet.mass / (dist**2)
+            force = (6.67408 * 10 ** (-4) * self.mass *
+                secondary_planet.mass / (dist**2))
 
             # determines the acceleration from the force
             accel = force / self.mass

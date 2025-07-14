@@ -1,6 +1,6 @@
 # Window settings
-WINWIDTH = 800
-WINHEIGHT = 800
+WINWIDTH = 1600
+WINHEIGHT = 900
 
 
 # Menus

@@ -1,25 +1,23 @@
 from random import random, randint
 from math import pi
 import tkinter as tk
-import multiprocessing as mp
+from multiprocessing import Pool
+import os
 
 from planet import Planet
-
-# GLOBAL VARIABLES
-WINWIDTH = 1650
-WINHEIGHT = 1000
-
+from constants import *
 
 def startPlanets(
-    numPlanets,
-    initialVelocity=1,
-    maxVelocity=10,
-    minMass=100,
-     maxMass=1000):
+        numPlanets: int,
+        initialVelocity: float=1,
+        maxVelocity: float=10,
+        minMass: float=100,
+        maxMass: float=1000) -> list[Planet]:
     
     """
     returns a list of numPlanets Planets with the following properties:
     - random x and y coordinates
+    - initial velocities in a random direction with magnitude intialVelocity
     - mass from minMass to maxMass
     """
 
@@ -31,8 +29,8 @@ def startPlanets(
         y = randint(0, WINHEIGHT)
 
         # generate velocities conditioned on intialVelocity
-        xvel = 0 + initialVelocity * randint(-maxVelocity, maxVelocity)
-        yvel = 0 + initialVelocity * randint(-maxVelocity, maxVelocity)
+        xvel = 0 #+ initialVelocity * random() * 2 * maxVelocity - maxVelocity
+        yvel = 0 #+ initialVelocity * random() * 2 * maxVelocity - maxVelocity
 
         # generates a random mass within the global variable limits
         mass = randint(minMass, maxMass)
@@ -43,11 +41,29 @@ def startPlanets(
     return planets
 
 
+def update_planet(planet, planets):
+    """
+    Computes velocity and position update for Planet planet.
+    """
+
+    planet.overallVelocity(planets)
+    planet.move(WINWIDTH, WINHEIGHT)
+
+
+def overall_velocity_wrapper(planet, planets):
+    planet.overallVelocity(planets)
+
+
 def calcVelocities(planets):
     """
-    updates the velocities of Planets in planets based on their proximity and
+    Updates the velocities of Planets in planets based on their proximity and
     masses.
     """
+
+    #num_processes = len(planets) // 200
+
+    #with Pool(max(1, min(num_processes, os.process_cpu_count()))) as pool:
+    #    pool.starmap(overall_velocity_wrapper, ((planet, planets) for planet in planets))
 
     for planet in planets:
         planet.overallVelocity(planets)
@@ -55,29 +71,13 @@ def calcVelocities(planets):
 
 def movePlanets(planets, keepOnScreen=True):
     """
-    takes an array of planets and updates their positions based on their
-    velocities. returns the updated array
+    Updates the positions of Planets in planets based on their
+    velocities.
     """
 
     for planet in planets:
         # adjusts the x and y coordinates of each planet
-        planet.move()
-
-        # ensures that planets are stopped if they reach or pass the edge of
-        # the screen
-        if keepOnScreen:
-            if planet.x - planet.radius < 0:
-                planet.x = 0 + planet.radius
-                planet.xvel = 0
-            if planet.y - planet.radius < 0:
-                planet.y = 0 + planet.radius
-                planet.yvel = 0
-            if planet.x + planet.radius > WINWIDTH:
-                planet.x = WINWIDTH - planet.radius
-                planet.xvel = 0
-            if planet.y + planet.radius > WINHEIGHT:
-                planet.y = WINHEIGHT - planet.radius
-                planet.yvel = 0
+        planet.move(WINWIDTH, WINHEIGHT)
 
 
 def collisionDetection(planets: list[Planet]):
@@ -133,23 +133,22 @@ def drawPlanets(planets, canvas):
         planet.draw(canvas)
 
 
-
 def runSim(numFrames, numPlanets, collisions=True):
     """
-    creates a tkinter canvas and simulation with numPlanets Planets.
+    Creates a tkinter canvas and simulation with numPlanets Planets.
     """
 
     # sets up tk window etc
     root = tk.Tk()
     root.wm_title = ("N-body Simulation")
-    canvas = tk.Canvas(root, width=WINWIDTH, height = WINHEIGHT, bg = 'black')
+    canvas = tk.Canvas(root, width=WINWIDTH, height=WINHEIGHT, bg = 'black')
     canvas.grid(row=0, column = 0)
 
     # intializes "time" to 0
     t = 0
 
     # creates all the initial planets
-    planets = startPlanets(numPlanets, True)
+    planets = startPlanets(numPlanets)
 
     # runs the simulation for a given number of frames
     while t < numFrames:
@@ -159,14 +158,20 @@ def runSim(numFrames, numPlanets, collisions=True):
         # remove all old objects from the canvas
         canvas.delete("all")
 
+        #num_processes = max(1, 
+        #                    min(len(planets) // 200, 
+        #                        os.process_cpu_count() - 1))
+
         # update the planets information (velocity, then position, then check
         # for collisions)
+        #with Pool(num_processes) as pool:
+        #    pool.starmap(update_planet, ((planet, planets) for planet in planets))
         calcVelocities(planets)
         movePlanets(planets)
+
         if (collisions):
             collisionDetection(planets)
 
-        # draw the planets
         drawPlanets(planets, canvas)
 
         # update the canvas
@@ -175,46 +180,18 @@ def runSim(numFrames, numPlanets, collisions=True):
     root.destroy()
 
 
-def twoPlanet(numFrames):
-    root = tk.Tk()
-    root.wm_title = ("Two Planet")
-    canvas = tk.Canvas(root, width=WINWIDTH, height = WINHEIGHT, bg = 'black')
-    canvas.grid(row=0, column = 0)
-
-    t = 0
-
-    planet1 = Planet(WINWIDTH /2 - 100, WINHEIGHT /2 - 100, 0, -1.5, 10000)
-    planet2 = Planet(WINWIDTH /2 + 100, WINHEIGHT /2 + 100, 0, 1.5, 10000)
-    planets = [planet1, planet2]
-
-    while t < numFrames:
-        t += 1
-
-        canvas.delete("all")
-
-        calcVelocities(planets)
-        movePlanets(planets)
-        collisionDetection(planets)
-
-        drawPlanets(planets, canvas)
-
-        canvas.update()
-    mainloop()
-    root.destroy()
-
-
 if __name__ == '__main__':
     # calls the function to run the simulation with a set time limit and
     # number of planets
-    user = int(input(
-        "Menu:\ninput 1 to run a regular, randomized simulation\ninput 2 to see a two planet simulation\nenter your choice:"))
+    user = int(input(MAIN_MENU))
     if (user == 1):
-        collisions = input(
-            "input 'y' to enable collision detection, 'n' to disable")
+        collisions = input(COLLISION_MENU)
         if (collisions == 'y'):
             collisions = True
         else:
             collisions = False
-        runSim(50000, 200, collisions)
+        runSim(50000, 10)
     if (user == 2):
         twoPlanet(50000)
+    else:
+        pass

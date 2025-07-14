@@ -4,6 +4,7 @@ import tkinter as tk
 import multiprocessing as mp
 from typing import Self
 
+from constants import GRAVITY
 
 class Planet:
     def __init__(self,
@@ -69,7 +70,7 @@ class Planet:
         # force is 0 if distance is 0, so no calculations are necessary
         if dist > 0:
             # determines the force applied on self by secondary_planet
-            force = (6.67408 * 10 ** (-4) * self.mass *
+            force = (GRAVITY * self.mass *
                 secondary_planet.mass / (dist**2))
 
             # determines the acceleration from the force

@@ -133,7 +133,7 @@ def drawPlanets(planets, canvas):
         planet.draw(canvas)
 
 
-def runSim(numFrames, numPlanets, collisions=True):
+def runSim(numPlanets, collisions=True):
     """
     Creates a tkinter canvas and simulation with numPlanets Planets.
     """
@@ -151,7 +151,7 @@ def runSim(numFrames, numPlanets, collisions=True):
     planets = startPlanets(numPlanets)
 
     # runs the simulation for a given number of frames
-    while t < numFrames:
+    while True:
         # increment the frame/time counter
         t += 1
 
@@ -183,15 +183,9 @@ def runSim(numFrames, numPlanets, collisions=True):
 if __name__ == '__main__':
     # calls the function to run the simulation with a set time limit and
     # number of planets
-    user = int(input(MAIN_MENU))
-    if (user == 1):
-        collisions = input(COLLISION_MENU)
-        if (collisions == 'y'):
-            collisions = True
-        else:
-            collisions = False
-        runSim(50000, 10)
-    if (user == 2):
-        twoPlanet(50000)
+    collisions = input(COLLISION_MENU)
+    if (collisions == 'y'):
+        collisions = True
     else:
-        pass
+        collisions = False
+    runSim(10, collisions)

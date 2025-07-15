@@ -117,28 +117,28 @@ class Simulation():
 
         t = 0
 
-        # runs the simulation for a given number of frames
-        while True:
-            t +=1
-            print(t)
-            
-            # remove all old objects from the canvas
-            self.canvas.delete("all")
+        with Pool(num_processes) as pool:
+            # runs the simulation for a given number of frames
+            while True:
+                t +=1
+                print(t)
+                
+                # remove all old objects from the canvas
+                self.canvas.delete("all")
 
-            # update the planets (velocity, then position, then
-            # check for collisions, then draw)
-            with Pool(num_processes) as pool:
+                # update the planets (velocity, then position, then
+                # check for collisions, then draw)
                 self.planets = pool.starmap(update_planet, [(planet, self.planets) for planet in self.planets])
 
-            if (collisions):
-                self.collisionDetection()
+                if (collisions):
+                    self.collisionDetection()
 
-            self.draw()
+                self.draw()
 
-            # update the canvas
-            self.canvas.update()
-        mainloop()
-        root.destroy()
+                # update the canvas
+                self.canvas.update()
+            mainloop()
+            root.destroy()
 
 def update_planet(planet, planets):
     """
@@ -159,5 +159,5 @@ if __name__ == '__main__':
         collisions = True
     else:
         collisions = False
-    sim = Simulation(100, collisions)
+    sim = Simulation(500, collisions)
     sim.run()
